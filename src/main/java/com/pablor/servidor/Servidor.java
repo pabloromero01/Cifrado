@@ -16,7 +16,7 @@ public class Servidor {
 
     // ✅ 16 bytes EXACTOS (AES-128). Debe ser igual en Cliente
     private static final byte[] SHARED_KEY =
-            "ClaveSuperSecre16".trim().getBytes(StandardCharsets.UTF_8);
+            "ClaveSuperSecre1".trim().getBytes(StandardCharsets.UTF_8);
 
 
 
