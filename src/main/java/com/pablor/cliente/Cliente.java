@@ -16,7 +16,9 @@ public class Cliente {
 
     // ✅ 16 bytes EXACTOS (AES-128). Debe ser igual en Servidor
     private static final byte[] SHARED_KEY =
-            "ClaveSuperSecre16".getBytes(StandardCharsets.UTF_8);
+            "ClaveSuperSecre16".trim().getBytes(StandardCharsets.UTF_8);
+
+
 
     private static final int IV_LENGTH = 12;
     private static final int TAG_LENGTH_BIT = 128;
