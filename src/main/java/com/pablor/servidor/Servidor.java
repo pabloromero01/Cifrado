@@ -4,6 +4,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,10 +14,11 @@ import java.util.Base64;
 
 public class Servidor {
 
-    // 16 bytes exactos (AES-128)
+    // ✅ 16 bytes EXACTOS (AES-128). Debe ser igual en Cliente
     private static final byte[] SHARED_KEY =
             "ClaveSuperSecre16".getBytes(StandardCharsets.UTF_8);
 
+    // GCM recomendado: IV 12 bytes, TAG 128 bits
     private static final int IV_LENGTH = 12;
     private static final int TAG_LENGTH_BIT = 128;
 
@@ -25,6 +27,7 @@ public class Servidor {
 
         try (ServerSocket serverSocket = new ServerSocket(puerto)) {
             System.out.println("Servidor escuchando en el puerto " + puerto + "...");
+            System.out.println("KEY bytes (debe ser 16): " + SHARED_KEY.length);
 
             try (Socket clientSocket = serverSocket.accept()) {
                 System.out.println("Cliente conectado desde: " + clientSocket.getInetAddress());
@@ -36,7 +39,7 @@ public class Servidor {
                     // 1) Recibir mensaje cifrado (Base64)
                     String payloadBase64 = in.readLine();
                     if (payloadBase64 == null) {
-                        System.out.println("El cliente ha cerrado la conexión.");
+                        System.out.println("El cliente cerró la conexión.");
                         break;
                     }
 
@@ -45,25 +48,24 @@ public class Servidor {
                     try {
                         mensajePlano = decryptFromBase64(payloadBase64);
                     } catch (Exception e) {
-                        System.out.println("Error descifrando. Payload recibido: " + payloadBase64);
+                        System.out.println("❌ Error descifrando payload. Se cierra la conexión.");
                         e.printStackTrace();
                         break;
                     }
 
-                    System.out.println("Cliente dice: " + mensajePlano);
+                    System.out.println("Cliente (descifrado): " + mensajePlano);
 
-                    // Salida limpia
+                    // 3) Si escribe salir, cerramos
                     if (mensajePlano.equalsIgnoreCase("salir")) {
-                        String bye = encryptToBase64("Servidor: conexión cerrada.");
-                        out.println(bye);
+                        String byeCifrado = encryptToBase64("Servidor: conexión cerrada.");
+                        out.println(byeCifrado);
                         System.out.println("Cerrando por 'salir'.");
                         break;
                     }
 
-                    // 3) Responder cifrado
+                    // 4) Responder cifrado
                     String respuesta = "Servidor: recibido -> [" + mensajePlano + "]";
                     String respuestaCifrada = encryptToBase64(respuesta);
-
                     out.println(respuestaCifrada);
                 }
             }
@@ -87,6 +89,7 @@ public class Servidor {
 
         byte[] ciphertext = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
 
+        // Empaquetamos: IV + CIPHERTEXT
         byte[] packed = new byte[iv.length + ciphertext.length];
         System.arraycopy(iv, 0, packed, 0, iv.length);
         System.arraycopy(ciphertext, 0, packed, iv.length, ciphertext.length);
@@ -115,4 +118,3 @@ public class Servidor {
         return new String(plaintext, StandardCharsets.UTF_8);
     }
 }
-

@@ -4,6 +4,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +14,7 @@ import java.util.Scanner;
 
 public class Cliente {
 
-    // 16 bytes exactos (AES-128) — igual que en Servidor
+    // ✅ 16 bytes EXACTOS (AES-128). Debe ser igual en Servidor
     private static final byte[] SHARED_KEY =
             "ClaveSuperSecre16".getBytes(StandardCharsets.UTF_8);
 
@@ -26,31 +27,32 @@ public class Cliente {
 
         try (Socket socket = new Socket(ipServidor, puerto)) {
             System.out.println("Conectado al servidor: " + ipServidor + ":" + puerto);
+            System.out.println("KEY bytes (debe ser 16): " + SHARED_KEY.length);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
             Scanner sc = new Scanner(System.in);
 
             while (true) {
                 System.out.print("Escribe mensaje (o 'salir'): ");
                 String mensajePlano = sc.nextLine();
 
-                // Cifrar y enviar
+                // 1) Cifrar y enviar
                 String mensajeCifrado = encryptToBase64(mensajePlano);
                 out.println(mensajeCifrado);
 
-                // Esperar respuesta cifrada
+                // 2) Recibir respuesta cifrada
                 String respuestaCifrada = in.readLine();
                 if (respuestaCifrada == null) {
                     System.out.println("El servidor cerró la conexión.");
                     break;
                 }
 
-                // Descifrar y mostrar
+                // 3) Descifrar y mostrar
                 String respuestaPlano = decryptFromBase64(respuestaCifrada);
-                System.out.println("Respuesta del servidor: " + respuestaPlano);
+                System.out.println("Respuesta DESCIFRADA del servidor: " + respuestaPlano);
 
+                // 4) Si escribimos salir, terminamos
                 if (mensajePlano.equalsIgnoreCase("salir")) {
                     break;
                 }
@@ -103,4 +105,3 @@ public class Cliente {
         return new String(plaintext, StandardCharsets.UTF_8);
     }
 }
-
