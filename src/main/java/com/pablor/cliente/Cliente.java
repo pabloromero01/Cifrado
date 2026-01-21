@@ -22,7 +22,7 @@ public class Cliente {
     public static void main(String[] args) {
         // ✅ PON AQUÍ LA IP DEL ORDENADOR SERVIDO
         // Ejemplo: "192.168.1.50"
-        String ipServidor = "172.22.144.1";
+        String ipServidor = "10.13.0.186";
         int puerto = 12345;
 
         try (Socket socket = new Socket(ipServidor, puerto)) {
