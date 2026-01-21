@@ -4,24 +4,23 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Scanner;
 
 public class Cliente {
 
-    // ✅ Debe ser EXACTAMENTE igual que en Servido
-    private static final byte[] SHARED_KEY = "ClaveSuperSecre1".getBytes(StandardCharsets.UTF_8);
+    // 16 bytes exactos (AES-128) — igual que en Servidor
+    private static final byte[] SHARED_KEY =
+            "ClaveSuperSecre16".getBytes(StandardCharsets.UTF_8);
 
     private static final int IV_LENGTH = 12;
     private static final int TAG_LENGTH_BIT = 128;
 
     public static void main(String[] args) {
-        // ✅ PON AQUÍ LA IP DEL ORDENADOR SERVIDO
-        // Ejemplo: "192.168.1.50"
         String ipServidor = "10.13.0.186";
         int puerto = 12345;
 
@@ -31,22 +30,31 @@ public class Cliente {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            // 1) Mensaje en claro (solo para ti)
-            String mensajePlano = "Hola servidor. Soy el cliente (mensaje secreto).";
+            Scanner sc = new Scanner(System.in);
 
-            // 2) Cifrar y enviar (Base64)
-            String mensajeCifrado = encryptToBase64(mensajePlano);
-            out.println(mensajeCifrado);
+            while (true) {
+                System.out.print("Escribe mensaje (o 'salir'): ");
+                String mensajePlano = sc.nextLine();
 
-            System.out.println("Mensaje ENVIADO cifrado (Base64): " + mensajeCifrado);
+                // Cifrar y enviar
+                String mensajeCifrado = encryptToBase64(mensajePlano);
+                out.println(mensajeCifrado);
 
-            // 3) Recibir respuesta cifrada (Base64)
-            String respuestaCifrada = in.readLine();
-            System.out.println("Respuesta RECIBIDA cifrada (Base64): " + respuestaCifrada);
+                // Esperar respuesta cifrada
+                String respuestaCifrada = in.readLine();
+                if (respuestaCifrada == null) {
+                    System.out.println("El servidor cerró la conexión.");
+                    break;
+                }
 
-            // 4) Descifrar respuesta
-            String respuestaPlano = decryptFromBase64(respuestaCifrada);
-            System.out.println("Respuesta DESCIFRADA del servidor: " + respuestaPlano);
+                // Descifrar y mostrar
+                String respuestaPlano = decryptFromBase64(respuestaCifrada);
+                System.out.println("Respuesta del servidor: " + respuestaPlano);
+
+                if (mensajePlano.equalsIgnoreCase("salir")) {
+                    break;
+                }
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,6 +85,10 @@ public class Cliente {
     private static String decryptFromBase64(String base64Payload) throws Exception {
         byte[] packed = Base64.getDecoder().decode(base64Payload);
 
+        if (packed.length < IV_LENGTH + 1) {
+            throw new IllegalArgumentException("Payload demasiado corto.");
+        }
+
         byte[] iv = new byte[IV_LENGTH];
         byte[] ciphertext = new byte[packed.length - IV_LENGTH];
 
@@ -91,3 +103,4 @@ public class Cliente {
         return new String(plaintext, StandardCharsets.UTF_8);
     }
 }
+
