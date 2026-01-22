@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 public class Cliente {
 
-    // ✅ 16 bytes EXACTOS (AES-128). Debe ser igual en Servidor
+
     private static final byte[] SHARED_KEY =
             "ClaveSuperSecre1".trim().getBytes(StandardCharsets.UTF_8);
 
