@@ -91,7 +91,7 @@ public class Servidor {
 
         byte[] ciphertext = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
 
-        // Empaquetamos: IV + CIPHERTEXT
+
         byte[] packed = new byte[iv.length + ciphertext.length];
         System.arraycopy(iv, 0, packed, 0, iv.length);
         System.arraycopy(ciphertext, 0, packed, iv.length, ciphertext.length);
