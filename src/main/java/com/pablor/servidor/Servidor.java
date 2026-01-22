@@ -50,7 +50,7 @@ public class Servidor {
                     try {
                         mensajePlano = decryptFromBase64(payloadBase64);
                     } catch (Exception e) {
-                        System.out.println("❌ Error descifrando payload. Se cierra la conexión.");
+                        System.out.println("Error descifrando payload. Se cierra la conexión.");
                         e.printStackTrace();
                         break;
                     }
