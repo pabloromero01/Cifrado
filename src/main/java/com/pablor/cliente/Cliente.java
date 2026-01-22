@@ -24,7 +24,7 @@ public class Cliente {
     private static final int TAG_LENGTH_BIT = 128;
 
     public static void main(String[] args) {
-        String ipServidor = "10.13.0.186";
+        String ipServidor = "10.13.3.85";
         int puerto = 12345;
 
         try (Socket socket = new Socket(ipServidor, puerto)) {
